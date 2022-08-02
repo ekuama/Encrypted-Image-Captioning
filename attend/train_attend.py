@@ -13,7 +13,7 @@ from nltk.translate.bleu_score import corpus_bleu
 from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence
 
-from datasets import CaptionDataset
+from data.datasets import CaptionDataset
 from model_attend import Encoder_A, DecoderWithAttention
 from utils_attend import AverageMeter, accuracy, adjust_learning_rate, clip_gradient, save_checkpoint
 
@@ -27,6 +27,7 @@ print(random_seed)
 
 
 def main(arg):
+    model_path = "/home/edsr/ImageCaptioning/models/"   # edit to your model folder
     device = torch.device("cuda")
     best_loss = 100.00
 
@@ -108,10 +109,10 @@ def main(arg):
         else:
             epochs_since_improvement = 0
 
-        save_checkpoint(arg.cnn_name, epoch, epochs_since_improvement, encoder, decoder,
+        save_checkpoint(model_path, arg.cnn_name, epoch, epochs_since_improvement, encoder, decoder,
                         model_optimizer, recent_bleu4, is_best, is_less)
 
-    with h5py.File(os.path.join(arg.cnn_name + '_attend.hdf5'), 'a') as h:
+    with h5py.File(os.path.join(model_path, arg.cnn_name + '_attend.hdf5'), 'a') as h:
         h.attrs['train_loss'] = train_losses
         h.attrs['train_acc'] = train_acc
         h.attrs['val_losses'] = val_losses
@@ -280,7 +281,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Image Captioning')
     # Data parameters
     parser.add_argument('--data_folder', type=str, help='path to data information',
-                        default='D:/PycharmProjects/EncryptedCaptioning/data_new')
+                        default='/home/edsr/ImageCaptioning/data_files')
     parser.add_argument('--data_name', type=str, help='dataset name + _5_3',
                         default='flickr8k_5_3')
 
