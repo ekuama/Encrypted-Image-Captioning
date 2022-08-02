@@ -125,9 +125,9 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
 
 
 def caption_search(image_name, name):
-    word_map_file = 'data_new/WORDMAP_flickr8k_5_3.json'
-    phase_img = 'testing/Phase/' + image_name + '.jpg.mat'
-    amp_img = 'testing/Amp/' + image_name + '.jpg.mat'
+    word_map_file = '/home/edsr/ImageCaptioning/data_files/WORDMAP_flickr8k_5_3.json'
+    phase_img = '/home/edsr/ImageCaptioning/testing/Phase/' + image_name + '.jpg.mat'  # edit to location of phase images
+    amp_img = '/home/edsr/ImageCaptioning/testing/Amp/' + image_name + '.jpg.mat'  # edit to location of amplitude images
 
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
