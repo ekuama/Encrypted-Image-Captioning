@@ -132,15 +132,14 @@ def caption_image_beam_search(beam_size_, device, encoder, decoder, phase_image_
     return seq
 
 
-def caption_search(image_name, name):
-    word_map_file_ = '/home/edsr/Image-Caption/data_new/WORDMAP_flickr8k_5_3.json'
-    phase_img = '/home/edsr/Image-Caption/testing/Exclude_60/Phase/' + image_name + '.jpg.mat'
-    amp_img = '/home/edsr/Image-Caption/testing/Exclude_60/Amp/' + image_name + '.jpg.mat'
-    r = 'exclude_0.6'
+def caption_search(image_name, name, robust):
+    word_map_file = 'data_files/WORDMAP_flickr8k_5_3.json'
+    phase_img = 'testing/' + robust + '/Phase/' + image_name + '.jpg.mat'
+    amp_img = 'testing/' + robust + '/Amp/' + image_name + '.jpg.mat'
 
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    with open(word_map_file_, 'r') as w:
+    with open(word_map_file, 'r') as w:
         word_map_ = json.load(w)
     rev_word_map_ = {v: k for k, v in word_map_.items()}
 
@@ -178,14 +177,16 @@ for img in data['images']:
     if img['split'] in {'test'}:
         test_image_paths.append(path)
 cnn_names = ['ResNet50', 'ResNet101', 'ResNeXt101']
-for cnn in cnn_names:
-    print('-------------------------' + cnn + '-----------------------------------------')
-    for o, fname in enumerate(tqdm(test_image_paths)):
-        caption_search(fname, cnn)
+robustness = ['noise_0.25', 'noise_0.5', 'noise_1', 'exclude_0.2', 'exclude_0.4', 'exclude_0.6']
+for r in robustness:
+    for cnn in cnn_names:
+        print('-------------------------' + cnn + '-----------------------------------------')
+        for o, fname in enumerate(tqdm(test_image_paths)):
+            caption_search(fname, cnn, r)
 
-    name_dict = {'Name': image_names, 'Beam 3': caps_3}
-    caption_nic = pd.DataFrame(name_dict)
-    caption_nic.to_csv(cnn + '_caption_nic_exclude_0.6.csv', index=False)
+        name_dict = {'Name': image_names, 'Beam 3': caps_3}
+        caption_nic = pd.DataFrame(name_dict)
+        caption_nic.to_csv('results_csv/' + cnn + '_caption_nic_exclude_0.6.csv', index=False)
 
-    caps_3 = []
-    image_names = []
+        caps_3 = []
+        image_names = []

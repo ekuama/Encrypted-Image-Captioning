@@ -30,7 +30,6 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
             # Encode
             encoder_out = encoder(phase, amp)
-            enc_image_size = encoder_out.size(1)
             encoder_dim = encoder_out.size(3)
 
             # Flatten encoding
@@ -129,11 +128,9 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
                     img_caps))  # remove <start> and pads
             i_c = list(map(lambda m: [rev_word_map[j_] for j_ in m], img_captions))
             references.append(i_c)
-            # m_caps = list(map(lambda m: ' '.join([rev_word_map[j_] for j_ in m]), img_captions))
 
             # Hypotheses
             hypo_caps = [w for w in seq if w not in {word_map['<start>'], word_map['<end>'], word_map['<pad>']}]
-            # hypo = ' '.join(rev_word_map[f] for f in hypo_caps)
             hypotheses.append([rev_word_map[f] for f in hypo_caps])
 
             assert len(references) == len(hypotheses)
@@ -145,10 +142,11 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
 if __name__ == '__main__':
     # Parameters
-    data_folder_ = '/home/edsr/Image_Caption/data_new'
+    data_folder_ = 'data_files'
     data_name_ = 'flickr8k_5_3'  # base name shared by data files
-    word_map_file_ = '/home/edsr/Image_Caption/data_new/WORDMAP_flickr8k_5_3.json'
+    word_map_file_ = 'data_files/WORDMAP_flickr8k_5_3.json'
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_folder = 'models/'
     cudnn.benchmark = True
 
     # Load word map (word2ix)
@@ -157,8 +155,9 @@ if __name__ == '__main__':
     rev_word_map_ = {v: k for k, v in word_map_.items()}
     vocab_size_ = len(word_map_)
     cnn_names = ['ResNet50', 'ResNet101', 'ResNeXt101']
+
     for name in cnn_names:
-        checkpoint = name + '_attend.pth.tar'
+        checkpoint = model_folder + name + '_attend.pth.tar'
         print(checkpoint)
 
         # Load model
@@ -183,7 +182,7 @@ if __name__ == '__main__':
               (beam_size, eval_metrics["Bleu_1"], eval_metrics["Bleu_2"], eval_metrics["Bleu_3"],
                eval_metrics["Bleu_4"], eval_metrics["METEOR"], eval_metrics["ROUGE_L"], eval_metrics["CIDEr"]))
 
-        checkpoint = 'BEST_' + name + '_attend.pth.tar'
+        checkpoint = model_folder + 'BEST_' + name + '_attend.pth.tar'
         print(checkpoint)
 
         # Load model
@@ -208,7 +207,7 @@ if __name__ == '__main__':
               (beam_size, eval_metrics["Bleu_1"], eval_metrics["Bleu_2"], eval_metrics["Bleu_3"],
                eval_metrics["Bleu_4"], eval_metrics["METEOR"], eval_metrics["ROUGE_L"], eval_metrics["CIDEr"]))
 
-        checkpoint = 'LESS_' + name + '_attend.pth.tar'
+        checkpoint = model_folder + 'LESS_' + name + '_attend.pth.tar'
         print(checkpoint)
 
         # Load model

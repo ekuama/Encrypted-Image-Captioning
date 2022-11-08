@@ -5,9 +5,9 @@ from torch import nn
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Encoder_A(nn.Module):
+class EncoderA(nn.Module):
     def __init__(self, name):
-        super(Encoder_A, self).__init__()
+        super(EncoderA, self).__init__()
         self.name = name
         if self.name == 'ResNet101':
             self.conv = nn.Conv2d(in_channels=6, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -37,38 +37,6 @@ class Encoder_A(nn.Module):
         return out
 
 
-class Encoder_B(nn.Module):
-
-    def __init__(self, name):
-        super(Encoder_B, self).__init__()
-        self.name = name
-        if self.name == 'ResNet101':
-            resnet = torchvision.models.resnet101(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-        elif self.name == 'ResNet50':
-            resnet = torchvision.models.resnet50(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-        else:
-            resnet = torchvision.models.resnext101_32x8d(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-        self.fine_tune()
-
-    def forward(self, images):
-        out = self.resnet(images)
-        out = out.view(out.size(0), -1)
-        return out
-
-    def fine_tune(self, fine_tune=True):
-        for p in self.resnet.parameters():
-            p.requires_grad = False
-        for c in list(self.resnet.children())[4:]:
-            for p in c.parameters():
-                p.requires_grad = fine_tune
-
-
 class Attention(nn.Module):
     def __init__(self, encoder_dim, decoder_dim, attention_dim):
         super(Attention, self).__init__()
@@ -88,7 +56,7 @@ class Attention(nn.Module):
 
 
 class DecoderWithAttention(nn.Module):
-    def __init__(self, name, attention_dim, embed_dim, decoder_dim, vocab_size, dropout=0.5):
+    def __init__(self, attention_dim, embed_dim, decoder_dim, vocab_size, dropout=0.5):
 
         super(DecoderWithAttention, self).__init__()
         self.encoder_dim = 2048

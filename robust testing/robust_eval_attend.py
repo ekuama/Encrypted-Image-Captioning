@@ -7,8 +7,8 @@ import torch.optim
 import torch.utils.data
 from tqdm import tqdm
 
-from datasets_robust_test import CaptionDataset
-from utils_attend import get_eval_score
+from data.datasets_robust_test import CaptionDataset
+from attend.utils_attend import get_eval_score
 
 
 def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_map, vocab_size, rev_word_map, robust):
@@ -30,7 +30,6 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
             # Encode
             encoder_out = encoder(phase, amp)
-            enc_image_size = encoder_out.size(1)
             encoder_dim = encoder_out.size(3)
 
             # Flatten encoding
@@ -141,9 +140,9 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
 if __name__ == '__main__':
     # Parameters
-    data_folder_ = '/home/edsr/Image-Caption/data_new'
+    data_folder_ = 'data_files'
     data_name_ = 'flickr8k_5_3'  # base name shared by data files
-    word_map_file_ = '/home/edsr/Image-Caption/data_new/WORDMAP_flickr8k_5_3.json'
+    word_map_file_ = 'data_files/WORDMAP_flickr8k_5_3.json'
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cudnn.benchmark = True
 
@@ -162,7 +161,7 @@ if __name__ == '__main__':
             print(checkpoint)
 
             # Load model
-            checkpoint = torch.load(checkpoint, map_location=device_)
+            checkpoint = torch.load('models/' + checkpoint, map_location=device_)
             decoder_ = checkpoint['decoder']
             decoder_ = decoder_.to(device_)
             decoder_.eval()

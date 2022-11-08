@@ -116,7 +116,7 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
 
 
 def caption_search(image_name, name):
-    word_map_file = 'data_new/WORDMAP_flickr8k_5_3.json'
+    word_map_file = 'data_files/WORDMAP_flickr8k_5_3.json'
     phase_img = 'testing/Phase/' + image_name + '.jpg.mat'
     amp_img = 'testing/Amp/' + image_name + '.jpg.mat'
 
@@ -127,11 +127,11 @@ def caption_search(image_name, name):
     rev_word_map_ = {v: k for k, v in word_map_.items()}
 
     if name == "ResNet50":
-        checkpoint = 'results/BEST_ResNet50_nic.pth.tar'
+        checkpoint = 'models/BEST_ResNet50_nic.pth.tar'
     elif name == "ResNet101":
-        checkpoint = 'results/LESS_ResNet101_nic.pth.tar'
+        checkpoint = 'models/LESS_ResNet101_nic.pth.tar'
     else:
-        checkpoint = 'results/BEST_ResNeXt101_nic.pth.tar'
+        checkpoint = 'models/BEST_ResNeXt101_nic.pth.tar'
 
     image_names.append(image_name)
     # Load model
@@ -166,7 +166,7 @@ for cnn in cnn_names:
 
     name_dict = {'Name': image_names, 'Beam 3': caps_3}
     caption_nic = pd.DataFrame(name_dict)
-    caption_nic.to_csv(cnn + '_caption_nic.csv', index=False)
+    caption_nic.to_csv('results_csv/' + cnn + '_caption_nic.csv', index=False)
 
     caps_3 = []
     image_names = []

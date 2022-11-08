@@ -7,7 +7,7 @@ import torch.optim
 import torch.utils.data
 from tqdm import tqdm
 
-from datasets import CaptionDataset
+from data.datasets import CaptionDataset
 from utils_nic import get_eval_score
 
 
@@ -120,11 +120,9 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
                     img_caps))  # remove <start> and pads
             i_c = list(map(lambda m: [rev_word_map[j_] for j_ in m], img_captions))
             references.append(i_c)
-            # m_caps = list(map(lambda m: ' '.join([rev_word_map[j_] for j_ in m]), img_captions))
 
             # Hypotheses
             hypo_caps = [w for w in seq if w not in {word_map['<start>'], word_map['<end>'], word_map['<pad>']}]
-            # hypo = ' '.join(rev_word_map[f] for f in hypo_caps)
             hypotheses.append([rev_word_map[f] for f in hypo_caps])
 
             assert len(references) == len(hypotheses)

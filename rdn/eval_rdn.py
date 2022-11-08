@@ -7,7 +7,7 @@ import torch.optim
 import torch.utils.data
 from tqdm import tqdm
 
-from datasets import CaptionDataset
+from data.datasets import CaptionDataset
 from utils_rdn import get_eval_score
 
 
@@ -30,7 +30,6 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
             # Encode
             encoder_out = encoder(phase, amp)
-            enc_image_size = encoder_out.size(1)
             encoder_dim = encoder_out.size(3)
 
             # Flatten encoding
@@ -56,7 +55,6 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
             step = 1
             h1, c1 = decoder.init_hidden_state(encoder_out)
             h2, c2 = decoder.init_hidden_state(encoder_out)
-            # h3, c3 = decoder.init_hidden_state(encoder_out)
 
             # s is a number less than or equal to k, because sequences are removed from this process once they hit <end>
             while True:
@@ -132,11 +130,9 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
                     img_caps))  # remove <start> and pads
             i_c = list(map(lambda m: [rev_word_map[j_] for j_ in m], img_captions))
             references.append(i_c)
-            # m_caps = list(map(lambda m: ' '.join([rev_word_map[j_] for j_ in m]), img_captions))
 
             # Hypotheses
             hypo_caps = [w for w in seq if w not in {word_map['<start>'], word_map['<end>'], word_map['<pad>']}]
-            # hypo = ' '.join(rev_word_map[f] for f in hypo_caps)
             hypotheses.append([rev_word_map[f] for f in hypo_caps])
 
             assert len(references) == len(hypotheses)
@@ -148,9 +144,9 @@ def evaluate(beam_size_, data_folder, data_name, device, encoder, decoder, word_
 
 if __name__ == '__main__':
     # Parameters
-    data_folder_ = '/home/edsr/Image-Caption/data_new'
+    data_folder_ = 'data_files'
     data_name_ = 'flickr8k_5_3'  # base name shared by data files
-    word_map_file_ = '/home/edsr/Image-Caption/data_new/WORDMAP_flickr8k_5_3.json'
+    word_map_file_ = 'data_files/WORDMAP_flickr8k_5_3.json'
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cudnn.benchmark = True
 

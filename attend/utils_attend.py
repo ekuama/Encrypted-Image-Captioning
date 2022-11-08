@@ -47,7 +47,7 @@ def clip_gradient(optimizer, grad_clip):
                 param.grad.data.clamp_(-grad_clip, grad_clip)
 
 
-def save_checkpoint(path, name, epoch, epochs_since_improvement, encoder, decoder,
+def save_checkpoint(name, epoch, epochs_since_improvement, encoder, decoder,
                     model_optimizer, recent, is_best, is_less):
     state = {'epoch': epoch,
              'epochs_since_improvement': epochs_since_improvement,
@@ -55,7 +55,7 @@ def save_checkpoint(path, name, epoch, epochs_since_improvement, encoder, decode
              'encoder': encoder,
              'decoder': decoder,
              'model_optimizer': model_optimizer}
-    filename = path + '/' + name + '_attend.pth.tar'
+    filename = 'models/' + name + '_attend.pth.tar'
     torch.save(state, filename)
     # If this checkpoint is the best so far, store a copy, so it doesn't get overwritten by a worse checkpoint
     if is_best:
@@ -113,7 +113,6 @@ def get_eval_score(references, hypotheses):
         score_i, scores_i = scorer.compute_score(ref, hypo)
         score.extend(score_i) if isinstance(score_i, list) else score.append(score_i)
         method.extend(method_i) if isinstance(method_i, list) else method.append(method_i)
-        # print("{} {}".format(method_i, score_i))
     score_dict = dict(zip(method, score))
 
     return score_dict

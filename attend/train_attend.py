@@ -14,7 +14,7 @@ from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence
 
 from data.datasets import CaptionDataset
-from model_attend import Encoder_A, DecoderWithAttention
+from model_attend import EncoderA, DecoderWithAttention
 from utils_attend import AverageMeter, accuracy, adjust_learning_rate, clip_gradient, save_checkpoint
 
 random_seed = random.randint(1, 10000)  # or any of your favorite number
@@ -27,7 +27,6 @@ print(random_seed)
 
 
 def main(arg):
-    model_path = "/home/edsr/ImageCaptioning/models/"   # edit to your model folder
     device = torch.device("cuda")
     best_loss = 100.00
 
@@ -38,9 +37,9 @@ def main(arg):
 
     # Initialize / load checkpoint
     if arg.checkpoint is None:
-        decoder = DecoderWithAttention(name=arg.cnn_name, attention_dim=arg.attention_dim, embed_dim=arg.emb_dim,
+        decoder = DecoderWithAttention(attention_dim=arg.attention_dim, embed_dim=arg.emb_dim,
                                        decoder_dim=arg.decoder_dim, vocab_size=len(word_map), dropout=arg.dropout)
-        encoder = Encoder_A(arg.cnn_name)
+        encoder = EncoderA(arg.cnn_name)
         model_optimizer = torch.optim.Adam([{'params': decoder.parameters()},
                                             {'params': encoder.parameters()}],
                                            lr=arg.decoder_lr, weight_decay=1e-4)
@@ -109,10 +108,10 @@ def main(arg):
         else:
             epochs_since_improvement = 0
 
-        save_checkpoint(model_path, arg.cnn_name, epoch, epochs_since_improvement, encoder, decoder,
+        save_checkpoint(arg.cnn_name, epoch, epochs_since_improvement, encoder, decoder,
                         model_optimizer, recent_bleu4, is_best, is_less)
 
-    with h5py.File(os.path.join(model_path, arg.cnn_name + '_attend.hdf5'), 'a') as h:
+    with h5py.File(os.path.join('models/' + arg.cnn_name + '_attend.hdf5'), 'a') as h:
         h.attrs['train_loss'] = train_losses
         h.attrs['train_acc'] = train_acc
         h.attrs['val_losses'] = val_losses
@@ -281,7 +280,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Image Captioning')
     # Data parameters
     parser.add_argument('--data_folder', type=str, help='path to data information',
-                        default='/home/edsr/ImageCaptioning/data_files')
+                        default='data_files')
     parser.add_argument('--data_name', type=str, help='dataset name + _5_3',
                         default='flickr8k_5_3')
 

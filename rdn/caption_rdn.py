@@ -130,9 +130,9 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
 
 
 def caption_search(image_name, name):
-    word_map_file = '/home/edsr/Image-Caption/data_new/WORDMAP_flickr8k_5_3.json'
-    phase_img = '/home/edsr/Image-Caption/testing/Phase/' + image_name + '.jpg.mat'
-    amp_img = '/home/edsr/Image-Caption/testing/Amp/' + image_name + '.jpg.mat'
+    word_map_file = 'data_files/WORDMAP_flickr8k_5_3.json'
+    phase_img = 'testing/Phase/' + image_name + '.jpg.mat'
+    amp_img = 'testing/Amp/' + image_name + '.jpg.mat'
 
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -141,11 +141,11 @@ def caption_search(image_name, name):
     rev_word_map_ = {v: k for k, v in word_map_.items()}
 
     if name == "ResNet50":
-        checkpoint = 'results/LESS_ResNet50_rdn.pth.tar'
+        checkpoint = 'models/LESS_ResNet50_rdn.pth.tar'
     elif name == "ResNet101":
-        checkpoint = 'results/LESS_ResNet101_rdn.pth.tar'
+        checkpoint = 'models/LESS_ResNet101_rdn.pth.tar'
     else:
-        checkpoint = 'results/LESS_ResNeXt101_rdn.pth.tar'
+        checkpoint = 'models/LESS_ResNeXt101_rdn.pth.tar'
 
     image_names.append(image_name)
     checkpoint = torch.load(checkpoint, map_location=device_)
@@ -179,7 +179,7 @@ for cnn in cnn_names:
 
     name_dict = {'Name': image_names, 'Beam 3': caps_3}
     caption_nic = pd.DataFrame(name_dict)
-    caption_nic.to_csv(cnn + '_caption_rdn.csv', index=False)
+    caption_nic.to_csv('results_csv/' + cnn + '_caption_rdn.csv', index=False)
 
     caps_3 = []
     image_names = []

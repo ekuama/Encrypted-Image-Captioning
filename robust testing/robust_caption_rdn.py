@@ -49,7 +49,6 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
     phase_in = phase_in.unsqueeze(0)
     amp_in = amp_in.unsqueeze(0)
     encoder_out = encoder(phase_in, amp_in)
-    enc_image_size = encoder_out.size(1)
     encoder_dim = encoder_out.size(3)
 
     # Flatten encoding
@@ -147,11 +146,10 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
     return seq
 
 
-def caption_search(image_name, name):
-    word_map_file = '/home/edsr/Image-Caption/data_new/WORDMAP_flickr8k_5_3.json'
-    phase_img = '/home/edsr/Image-Caption/testing/Exclude_60/Phase/' + image_name + '.jpg.mat'
-    amp_img = '/home/edsr/Image-Caption/testing/Exclude_60/Amp/' + image_name + '.jpg.mat'
-    r = 'exclude_0.6'
+def caption_search(image_name, name, robust):
+    word_map_file = 'data_files/WORDMAP_flickr8k_5_3.json'
+    phase_img = 'testing/' + robust + '/Phase/' + image_name + '.jpg.mat'
+    amp_img = 'testing/' + robust + '/Amp/' + image_name + '.jpg.mat'
 
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -193,14 +191,16 @@ for img in data['images']:
     if img['split'] in {'test'}:
         test_image_paths.append(path)
 cnn_names = ['ResNet50', 'ResNet101', 'ResNeXt101']
-for cnn in cnn_names:
-    print('-------------------------' + cnn + '-----------------------------------------')
-    for o, fname in enumerate(tqdm(test_image_paths)):
-        caption_search(fname, cnn)
+robustness = ['noise_0.25', 'noise_0.5', 'noise_1', 'exclude_0.2', 'exclude_0.4', 'exclude_0.6']
+for r in robustness:
+    for cnn in cnn_names:
+        print('-------------------------' + cnn + '-----------------------------------------')
+        for o, fname in enumerate(tqdm(test_image_paths)):
+            caption_search(fname, cnn, r)
 
-    name_dict = {'Name': image_names, 'Beam 3': caps_3}
-    caption_nic = pd.DataFrame(name_dict)
-    caption_nic.to_csv(cnn + '_caption_rdn_exclude_0.6.csv', index=False)
+        name_dict = {'Name': image_names, 'Beam 3': caps_3}
+        caption_nic = pd.DataFrame(name_dict)
+        caption_nic.to_csv('results_csv/' + cnn + '_caption_rdn_exclude_0.6.csv', index=False)
 
-    caps_3 = []
-    image_names = []
+        caps_3 = []
+        image_names = []

@@ -31,7 +31,6 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
     phase_in = phase_in.unsqueeze(0)
     amp_in = amp_in.unsqueeze(0)
     encoder_out = encoder(phase_in, amp_in)
-    enc_image_size = encoder_out.size(1)
     encoder_dim = encoder_out.size(3)
 
     # Flatten encoding
@@ -125,9 +124,9 @@ def caption_image_beam_search(encoder, decoder, phase_image_path, amp_image_path
 
 
 def caption_search(image_name, name):
-    word_map_file = '/home/edsr/ImageCaptioning/data_files/WORDMAP_flickr8k_5_3.json'
-    phase_img = '/home/edsr/ImageCaptioning/testing/Phase/' + image_name + '.jpg.mat'  # edit to location of phase images
-    amp_img = '/home/edsr/ImageCaptioning/testing/Amp/' + image_name + '.jpg.mat'  # edit to location of amplitude images
+    word_map_file = 'data_files/WORDMAP_flickr8k_5_3.json'
+    phase_img = 'testing/Phase/' + image_name + '.jpg.mat'
+    amp_img = 'testing/Amp/' + image_name + '.jpg.mat'
 
     device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -135,12 +134,13 @@ def caption_search(image_name, name):
         word_map_ = json.load(z)
     rev_word_map_ = {v: k for k, v in word_map_.items()}
 
+    # select your best weights
     if name == "ResNet50":
-        checkpoint = 'results/BEST_ResNet50_attend.pth.tar'
+        checkpoint = 'models/BEST_ResNet50_attend.pth.tar'
     elif name == "ResNet101":
-        checkpoint = 'results/BEST_ResNet101_attend.pth.tar'
+        checkpoint = 'models/BEST_ResNet101_attend.pth.tar'
     else:
-        checkpoint = 'results/BEST_ResNeXt101_attend.pth.tar'
+        checkpoint = 'models/BEST_ResNeXt101_attend.pth.tar'
 
     image_names.append(image_name)
     # Load model
@@ -175,7 +175,7 @@ for cnn in cnn_names:
 
     name_dict = {'Name': image_names, 'Beam 3': caps_3}
     caption_nic = pd.DataFrame(name_dict)
-    caption_nic.to_csv(cnn + '_caption_attend.csv', index=False)
+    caption_nic.to_csv('results_csv/' + cnn + '_caption_attend.csv', index=False)
 
     caps_3 = []
     image_names = []

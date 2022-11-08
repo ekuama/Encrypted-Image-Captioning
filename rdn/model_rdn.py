@@ -5,9 +5,9 @@ from torch import nn
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Encoder_A(nn.Module):
+class EncoderA(nn.Module):
     def __init__(self, name, encoded_image_size=14):
-        super(Encoder_A, self).__init__()
+        super(EncoderA, self).__init__()
         self.name = name
         if self.name == 'ResNet101':
             self.conv = nn.Conv2d(in_channels=6, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -39,41 +39,10 @@ class Encoder_A(nn.Module):
         return out
 
 
-class Encoder_B(nn.Module):
-
-    def __init__(self, name):
-        super(Encoder_B, self).__init__()
-        self.name = name
-        if self.name == 'ResNet101':
-            resnet = torchvision.models.resnet101(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-        elif self.name == 'ResNet50':
-            resnet = torchvision.models.resnet50(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-        else:
-            resnet = torchvision.models.resnext101_32x8d(pretrained=True)
-            modules = list(resnet.children())[:-1]
-            self.resnet = nn.Sequential(*modules)
-
-    def forward(self, images):
-        out = self.resnet(images)
-        out = out.view(out.size(0), -1)
-        return out
-
-    def fine_tune(self, fine_tune=True):
-        for p in self.resnet.parameters():
-            p.requires_grad = False
-        for c in list(self.resnet.children())[4:]:
-            for p in c.parameters():
-                p.requires_grad = fine_tune
-
-
-class Attention_Visual(nn.Module):
+class AttentionVisual(nn.Module):
     def __init__(self, encoder_dim, decoder_dim, attention_dim):
 
-        super(Attention_Visual, self).__init__()
+        super(AttentionVisual, self).__init__()
         self.encoder_att = nn.Linear(encoder_dim, attention_dim)
         self.decoder_att = nn.Linear(decoder_dim, attention_dim)
         self.full_att = nn.Linear(attention_dim, 1)
@@ -89,7 +58,7 @@ class Attention_Visual(nn.Module):
 
 
 class DecoderWithAttention(nn.Module):
-    def __init__(self, name, attention_dim, embed_dim, decoder_dim, vocab_size, dropout=0.5):
+    def __init__(self, attention_dim, embed_dim, decoder_dim, vocab_size, dropout=0.5):
         super(DecoderWithAttention, self).__init__()
         self.encoder_dim = 2048
         self.attention_dim = attention_dim
@@ -97,7 +66,7 @@ class DecoderWithAttention(nn.Module):
         self.decoder_dim = decoder_dim
         self.vocab_size = vocab_size
         self.dropout = dropout
-        self.attention = Attention_Visual(self.encoder_dim, decoder_dim, attention_dim)
+        self.attention = AttentionVisual(self.encoder_dim, decoder_dim, attention_dim)
         self.f_beta = nn.Linear(decoder_dim, self.encoder_dim)  # linear layer to create a sigmoid-activated gate
         self.sigmoid = nn.Sigmoid()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
@@ -134,7 +103,6 @@ class DecoderWithAttention(nn.Module):
 
         # Flatten image
         encoder_out = encoder_out.view(batch_size, -1, encoder_dim)
-        num_pixels = encoder_out.size(1)
 
         # Sort input data by decreasing lengths; why? apparent below
         caption_lengths, sort_ind = caption_lengths.squeeze(1).sort(dim=0, descending=True)
@@ -151,6 +119,7 @@ class DecoderWithAttention(nn.Module):
         # We won't decode at the <end> position, since we've finished generating as soon as we generate <end>
         # So, decoding lengths are actual lengths - 1
         decode_lengths = (caption_lengths - 1).tolist()
+
         relative_pos = torch.zeros(batch_size, max(decode_lengths))
         for h in range(len(decode_lengths)):
             for l in range(decode_lengths[h]):
